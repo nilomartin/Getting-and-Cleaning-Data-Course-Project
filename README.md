@@ -1,47 +1,65 @@
 # Getting-and-Cleaning-Data-Course-Project
 Repository for the Getting and Cleaning Data Course project
-Dataset downloaded and extracted under the folder called UCI HAR Dataset
+The file run_analysis.R can be run as long as the Samsung data is in your working directory.
 
-The 
-Assign each data to variables
-features <- features.txt : 561 rows, 2 columns
-The features selected for this database come from the accelerometer and gyroscope 3-axial raw signals tAcc-XYZ and tGyro-XYZ.
-activities <- activity_labels.txt : 6 rows, 2 columns
-List of activities performed when the corresponding measurements were taken and its codes (labels)
-subject_test <- test/subject_test.txt : 2947 rows, 1 column
-contains test data of 9/30 volunteer test subjects being observed
-x_test <- test/X_test.txt : 2947 rows, 561 columns
-contains recorded features test data
-y_test <- test/y_test.txt : 2947 rows, 1 columns
-contains test data of activities’code labels
-subject_train <- test/subject_train.txt : 7352 rows, 1 column
-contains train data of 21/30 volunteer subjects being observed
-x_train <- test/X_train.txt : 7352 rows, 561 columns
-contains recorded features train data
-y_train <- test/y_train.txt : 7352 rows, 1 columns
-contains train data of activities’code labels
+The run_analysis.R script works according to the following steps.
 
-Merges the training and the test sets to create one data set
-X (10299 rows, 561 columns) is created by merging x_train and x_test using rbind() function
-Y (10299 rows, 1 column) is created by merging y_train and y_test using rbind() function
-Subject (10299 rows, 1 column) is created by merging subject_train and subject_test using rbind() function
-Merged_Data (10299 rows, 563 column) is created by merging Subject, Y and X using cbind() function
+1-Loading packages:
+library(data.table)
+library(dplyr)
 
-Extracts only the measurements on the mean and standard deviation for each measurement
-TidyData (10299 rows, 88 columns) is created by subsetting Merged_Data, selecting only columns: subject, code and the measurements on the mean and standard deviation (std) for each measurement
+2-Load data info into R:
+featuresPath<-'C:\\Users\\niloa\\Documents\\machine_learning\\Curso3_coursera\\project\\UCI HAR Dataset\\features.txt'
+activityPath<-'C:\\Users\\niloa\\Documents\\machine_learning\\Curso3_coursera\\project\\UCI HAR Dataset\\activity_labels.txt'
+features<-fread(featuresPath)
+activity<-fread(activityPath,col.names = c('id','aactivity'))
+featuresNames<-as.character(features$V2)
 
-Uses descriptive activity names to name the activities in the data set
-Entire numbers in code column of the TidyData replaced with corresponding activity taken from second column of the activities variable
+3-Load train data into R:
+xtrainPath<-'C:\\Users\\niloa\\Documents\\machine_learning\\Curso3_coursera\\project\\UCI HAR Dataset\\train\\X_train.txt'
+ytrainPath<-'C:\\Users\\niloa\\Documents\\machine_learning\\Curso3_coursera\\project\\UCI HAR Dataset\\train\\Y_train.txt'
+trainSubjectPath<-'C:\\Users\\niloa\\Documents\\machine_learning\\Curso3_coursera\\project\\UCI HAR Dataset\\train\\subject_train.txt'
+xtrain<-fread(xtrainPath)
+ytrain<-fread(ytrainPath)
+subjectTrain<-fread(trainSubjectPath)
+trainData<-cbind(subjectTrain,ytrain,xtrain)
 
-Appropriately labels the data set with descriptive variable names
-code column in TidyData renamed into activities
-All Acc in column’s name replaced by Accelerometer
-All Gyro in column’s name replaced by Gyroscope
-All BodyBody in column’s name replaced by Body
-All Mag in column’s name replaced by Magnitude
-All start with character f in column’s name replaced by Frequency
-All start with character t in column’s name replaced by Time
+3-Load test data into R:
+xtestPath<-'C:\\Users\\niloa\\Documents\\machine_learning\\Curso3_coursera\\project\\UCI HAR Dataset\\test\\X_test.txt'
+ytestPath<-'C:\\Users\\niloa\\Documents\\machine_learning\\Curso3_coursera\\project\\UCI HAR Dataset\\test\\Y_test.txt'
+testSubjectPath<-'C:\\Users\\niloa\\Documents\\machine_learning\\Curso3_coursera\\project\\UCI HAR Dataset\\test\\subject_test.txt'
+xtest<-fread(xtestPath)
+ytest<-fread(ytestPath)
+subjectTest<-fread(testSubjectPath)
+testData<-cbind(subjectTest,ytest,xtest)
 
-From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject
-FinalData (180 rows, 88 columns) is created by sumarizing TidyData taking the means of each variable for each activity and each subject, after groupped by subject and activity.
-Export FinalData into FinalData.txt file.
+4- Merging train and test data into variable "projectData":
+projectData<-rbind(trainData,testData)
+projectData<-data.table(projectData)
+setnames(projectData,c('subject','activity',featuresNames))
+
+5- Filter mean and std columns using grep() function:
+columns<-grep("subject|activity|mean[\'('\')']|std[\'('\')'])", names(projectData),value = T)
+projectData<-select(projectData,c(columns))
+
+6- Changing activities numbers to activity labels:
+projectData$activity<-activity[projectData$activity,2]
+
+7- Appropriated variables naming with gsub() function:
+names(projectData)<-gsub("Acc", "Accelerometer", names(projectData))
+names(projectData)<-gsub("Gyro", "Gyroscope", names(projectData))
+names(projectData)<-gsub("BodyBody", "Body", names(projectData))
+names(projectData)<-gsub("Mag", "Magnitude", names(projectData))
+names(projectData)<-gsub("^t", "Time", names(projectData))
+names(projectData)<-gsub("^f", "Frequency", names(projectData))
+names(projectData)<-gsub("tBody", "TimeBody", names(projectData))
+names(projectData)<-gsub("-mean()", "Mean", names(projectData), ignore.case = TRUE)
+names(projectData)<-gsub("-std()", "STD", names(projectData), ignore.case = TRUE)
+names(projectData)<-gsub("-freq()", "Frequency", names(projectData), ignore.case = TRUE)
+names(projectData)<-gsub("angle", "Angle", names(projectData))
+names(projectData)<-gsub("gravity", "Gravity", names(projectData))
+
+8-Subset the data with group_by() function and writing into txt file using wtrite.table():
+projectDataSubset<-group_by(projectData,subject,activity)
+finalSubset<-summarise_all(projectDataSubset,mean)
+write.table(finalSubset, 'finalSubset.txt', row.name=FALSE)
