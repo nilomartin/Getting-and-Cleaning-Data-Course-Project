@@ -5,10 +5,7 @@ featuresPath<-'C:\\Users\\niloa\\Documents\\machine_learning\\Curso3_coursera\\p
 activityPath<-'C:\\Users\\niloa\\Documents\\machine_learning\\Curso3_coursera\\project\\UCI HAR Dataset\\activity_labels.txt'
 features<-fread(featuresPath)
 activity<-fread(activityPath,col.names = c('id','aactivity'))
-# teste<-rep(sample(1:6),times=2)
-# teste<-mutate(teste,)
 featuresNames<-as.character(features$V2)
-featuresNames
 #loading train data
 xtrainPath<-'C:\\Users\\niloa\\Documents\\machine_learning\\Curso3_coursera\\project\\UCI HAR Dataset\\train\\X_train.txt'
 ytrainPath<-'C:\\Users\\niloa\\Documents\\machine_learning\\Curso3_coursera\\project\\UCI HAR Dataset\\train\\Y_train.txt'
