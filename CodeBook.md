@@ -1,6 +1,6 @@
 Codebook for run_analysis.R file.  
 
-The following files are available for the train and test data. Their descriptions are equivalent. 
+The following variables are available for finalSubset.txt file, generated from run_analysis.R file.
 
 - Subject: Each row identifies the subject who performed the activity for each window sample. Its range is from 1 to 30.
 
