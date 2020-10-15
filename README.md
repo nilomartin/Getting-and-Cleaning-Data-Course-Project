@@ -1,5 +1,6 @@
 # Getting-and-Cleaning-Data-Course-Project
-Repository for the Getting and Cleaning Data Course project
+Repository for the Getting and Cleaning Data Course project.
+
 The file run_analysis.R can be run as long as the Samsung data is in your working directory.
 
 The run_analysis.R script works according to the following steps.
